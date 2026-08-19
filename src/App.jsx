@@ -16,6 +16,7 @@ import {
   TrendingDown,
   FileDown,
   Table2,
+  Github,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -1552,6 +1553,18 @@ export default function CalculadoraFatura() {
             </div>
           )}
         </section>
+
+        <footer className="mt-10 flex justify-center">
+          <a
+            href="https://github.com/rbarros"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-xs text-stone-400 hover:text-teal-700 transition-colors"
+          >
+            <Github size={14} />
+            github.com/rbarros
+          </a>
+        </footer>
       </div>
 
       {/* RELATÓRIO PARA IMPRESSÃO / PDF */}
