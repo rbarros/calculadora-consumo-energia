@@ -809,7 +809,7 @@ export default function CalculadoraFatura() {
           <h1 className="mt-1 font-serif text-3xl md:text-4xl font-semibold text-stone-900">
             Quanto custa cada kWh?
           </h1>
-          <p className="mt-1 text-sm text-stone-500 max-w-md">
+          <p className="mt-1 text-sm text-stone-500">
             Informe o consumo e as tarifas da sua fatura — os campos já vêm
             preenchidos com um exemplo real de junho/2026. O histórico salvo
             é privado: só você tem acesso a ele. Nenhuma informação pessoal
@@ -952,8 +952,8 @@ export default function CalculadoraFatura() {
                   }`}
                 >
                   <span
-                    className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
-                      temSolar ? "translate-x-5" : "translate-x-0.5"
+                    className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                      temSolar ? "translate-x-5" : "translate-x-0"
                     }`}
                   />
                 </button>
