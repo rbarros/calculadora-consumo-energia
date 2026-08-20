@@ -17,6 +17,8 @@ import {
   FileDown,
   Table2,
   Github,
+  Smartphone,
+  ShieldCheck,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -27,21 +29,9 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
-
-// Fora do Claude.ai não existe `window.storage` — este shim replica a
-// mesma interface (get/set assíncronos) usando localStorage do navegador,
-// para que os dados fiquem salvos apenas neste dispositivo/navegador.
-const storage = {
-  async get(key) {
-    const raw = window.localStorage.getItem(key);
-    if (raw === null) throw new Error("Chave não encontrada");
-    return { key, value: raw, shared: false };
-  },
-  async set(key, value) {
-    window.localStorage.setItem(key, value);
-    return { key, value, shared: false };
-  },
-};
+import CookieBanner from "./CookieBanner.jsx";
+import { useHistoricoConsumo } from "./useHistoricoConsumo.js";
+import DevicePairingModal from "./DevicePairingModal.jsx";
 
 const brl = (n) =>
   (isNaN(n) ? 0 : n).toLocaleString("pt-BR", {
@@ -512,28 +502,19 @@ export default function CalculadoraFatura() {
   const [importExpanded, setImportExpanded] = useState(false);
   const [showInfo, setShowInfo] = useState(true);
 
-  // Histórico
-  const [historico, setHistorico] = useState([]);
-  const [loadingHist, setLoadingHist] = useState(true);
-  const [histError, setHistError] = useState(null);
-  const [saving, setSaving] = useState(false);
-  const [saveMsg, setSaveMsg] = useState("");
-
-  const HIST_KEY = "historico-faturas";
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await storage.get(HIST_KEY);
-        const parsed = res ? JSON.parse(res.value) : [];
-        setHistorico(Array.isArray(parsed) ? parsed : []);
-      } catch (e) {
-        setHistorico([]);
-      } finally {
-        setLoadingHist(false);
-      }
-    })();
-  }, []);
+  // Histórico — sincronizado via GunDB (P2P + E2EE), ver useHistoricoConsumo.js
+  const {
+    historico,
+    loadingHist,
+    histError,
+    saving,
+    saveMsg,
+    salvarMes: salvarMesGun,
+    excluirMes: excluirMesGun,
+    limparHistorico,
+  } = useHistoricoConsumo();
+  const [showPairing, setShowPairing] = useState(false);
+  const [confirmandoLimpeza, setConfirmandoLimpeza] = useState(false);
 
   const calc = useMemo(() => {
     const debitoTUSD = kwhTUSD * tarifaTUSD;
@@ -600,8 +581,6 @@ export default function CalculadoraFatura() {
 
   const salvarMes = async () => {
     if (!mesReferencia) return;
-    setSaving(true);
-    setSaveMsg("");
     const registro = {
       mes: mesReferencia,
       kwhTUSD,
@@ -620,41 +599,9 @@ export default function CalculadoraFatura() {
       consumoLiquidoKwh: calc.consumoLiquidoKwh,
       salvoEm: new Date().toISOString(),
     };
-    const outros = historico.filter((h) => h.mes !== mesReferencia);
-    const novo = [...outros, registro].sort((a, b) => a.mes.localeCompare(b.mes));
-
-    if (typeof window === "undefined" || !window.localStorage) {
-      // Armazenamento persistente indisponível neste ambiente: guarda
-      // apenas na sessão atual para o recurso continuar funcionando.
-      setHistorico(novo);
-      setSaveMsg("Salvo nesta sessão (armazenamento permanente indisponível aqui).");
-      setSaving(false);
-      setTimeout(() => setSaveMsg(""), 4000);
-      return;
-    }
-
-    try {
-      let result;
-      try {
-        result = await storage.set(HIST_KEY, JSON.stringify(novo));
-      } catch (firstErr) {
-        // Retry único para falhas transitórias da ponte de armazenamento
-        await new Promise((r) => setTimeout(r, 600));
-        result = await storage.set(HIST_KEY, JSON.stringify(novo));
-      }
-      if (!result) throw new Error("Resposta vazia do armazenamento");
-      setHistorico(novo);
-      setSaveMsg("Mês salvo no histórico.");
-    } catch (e) {
-      // Mesmo se a persistência falhar, mantém o dado disponível na sessão
-      // atual para não travar o fluxo do usuário.
-      setHistorico(novo);
-      const detalhe = e && e.message ? e.message : "erro desconhecido";
-      setSaveMsg(`Salvo nesta sessão, mas não foi possível persistir (${detalhe}).`);
-    } finally {
-      setSaving(false);
-      setTimeout(() => setSaveMsg(""), 4000);
-    }
+    // Erros já são exibidos via saveMsg dentro do hook — aqui só evitamos
+    // uma rejeição de promise não tratada.
+    await salvarMesGun(registro).catch(() => {});
   };
 
   const carregarMes = (registro) => {
@@ -674,16 +621,7 @@ export default function CalculadoraFatura() {
   };
 
   const excluirMes = async (mes) => {
-    const novo = historico.filter((h) => h.mes !== mes);
-    setHistorico(novo);
-    if (typeof window === "undefined" || !window.localStorage) return;
-    try {
-      await storage.set(HIST_KEY, JSON.stringify(novo));
-    } catch (e) {
-      const detalhe = e && e.message ? e.message : "erro desconhecido";
-      setHistError(`Removido nesta sessão, mas não foi possível salvar a alteração (${detalhe}).`);
-      setTimeout(() => setHistError(null), 4000);
-    }
+    await excluirMesGun(mes);
   };
 
   const handleImportChange = (mes, valor) => {
@@ -751,38 +689,24 @@ export default function CalculadoraFatura() {
     const novosRegistros = preenchidos.map((r) =>
       construirRegistroImportado(r.kwh, r.kwhInjecao || 0, r.mes)
     );
-    const mesesSelecionados = new Set(novosRegistros.map((r) => r.mes));
-    const mantidos = historico.filter((h) => !mesesSelecionados.has(h.mes));
-    const novo = [...mantidos, ...novosRegistros].sort((a, b) =>
-      a.mes.localeCompare(b.mes)
+
+    // Gun não tem transação multi-chave: cada mês importado vira um
+    // .put() independente. Reporta falhas parciais em vez de assumir
+    // tudo-ou-nada.
+    const resultados = await Promise.allSettled(
+      novosRegistros.map((registro) => salvarMesGun(registro))
     );
+    const falhas = resultados.filter((r) => r.status === "rejected").length;
 
-    const finalizar = (msg) => {
-      setHistorico(novo);
-      setImportMsg(msg);
-      setImportValues({});
-      setImportValuesInjetada({});
-      setImportSaving(false);
-      setTimeout(() => setImportMsg(""), 5000);
-    };
-
-    if (typeof window === "undefined" || !window.localStorage) {
-      finalizar(
-        `${novosRegistros.length} meses importados nesta sessão (armazenamento permanente indisponível aqui).`
-      );
-      return;
-    }
-
-    try {
-      const result = await storage.set(HIST_KEY, JSON.stringify(novo));
-      if (!result) throw new Error("Resposta vazia do armazenamento");
-      finalizar(`${novosRegistros.length} meses importados com sucesso.`);
-    } catch (e) {
-      const detalhe = e && e.message ? e.message : "erro desconhecido";
-      finalizar(
-        `Importado nesta sessão, mas não foi possível persistir (${detalhe}).`
-      );
-    }
+    setImportValues({});
+    setImportValuesInjetada({});
+    setImportSaving(false);
+    setImportMsg(
+      falhas === 0
+        ? `${novosRegistros.length} meses importados com sucesso.`
+        : `${novosRegistros.length - falhas} de ${novosRegistros.length} meses importados (${falhas} falharam ao sincronizar).`
+    );
+    setTimeout(() => setImportMsg(""), 5000);
   };
 
   const historicoOrdenado = [...historico].sort((a, b) => a.mes.localeCompare(b.mes));
@@ -1164,15 +1088,68 @@ export default function CalculadoraFatura() {
 
         {/* HISTÓRICO MENSAL */}
         <section className="mt-6 rounded-lg border border-stone-200 bg-white p-5">
-          <div className="flex items-center gap-2 mb-1">
-            <History size={16} className="text-teal-700" />
-            <h2 className="font-serif text-lg font-semibold">Histórico mensal</h2>
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <div className="flex items-center gap-2">
+              <History size={16} className="text-teal-700" />
+              <h2 className="font-serif text-lg font-semibold">Histórico mensal</h2>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowPairing(true)}
+                className="flex items-center gap-1.5 rounded-md border border-stone-300 bg-white px-2.5 py-1.5 text-xs font-medium text-stone-600 hover:border-teal-700 hover:text-teal-700 transition-colors"
+              >
+                <Smartphone size={13} />
+                Sincronizar dispositivo
+              </button>
+              {historico.length > 0 && (
+                <button
+                  onClick={() => setConfirmandoLimpeza(true)}
+                  className="flex items-center gap-1.5 rounded-md border border-stone-300 bg-white px-2.5 py-1.5 text-xs font-medium text-stone-600 hover:border-rose-600 hover:text-rose-600 transition-colors"
+                >
+                  <Trash2 size={13} />
+                  Limpar tudo
+                </button>
+              )}
+            </div>
           </div>
-          <p className="text-xs text-stone-500 mb-4">
+          <p className="text-xs text-stone-500 mb-1">
             Comparar o histórico de consumo é a principal forma de identificar
             se um aumento vem do consumo real ou de outros fatores — é a
             própria orientação que as distribuidoras dão aos clientes.
           </p>
+          <p className="flex items-start gap-1.5 text-xs text-stone-400 mb-4">
+            <ShieldCheck size={13} className="mt-0.5 shrink-0" />
+            Seu histórico é criptografado de ponta a ponta e fica vinculado a
+            este dispositivo/navegador. Use "Sincronizar dispositivo" antes de
+            trocar de navegador ou limpar os dados do site — sem isso, não há
+            como recuperar o histórico.
+          </p>
+
+          {confirmandoLimpeza && (
+            <div className="mb-4 rounded-md border border-rose-200 bg-rose-50 p-3">
+              <p className="text-xs text-rose-800 mb-2">
+                Isso apaga todos os meses salvos em todos os dispositivos
+                sincronizados. Essa ação não pode ser desfeita. Confirmar?
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    limparHistorico();
+                    setConfirmandoLimpeza(false);
+                  }}
+                  className="rounded-md bg-rose-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-rose-700 transition-colors"
+                >
+                  Apagar tudo
+                </button>
+                <button
+                  onClick={() => setConfirmandoLimpeza(false)}
+                  className="rounded-md border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-600 hover:bg-stone-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Importar histórico manualmente */}
           <div className="mb-5 rounded-md border border-dashed border-stone-300 p-3">
@@ -1554,7 +1531,27 @@ export default function CalculadoraFatura() {
           )}
         </section>
 
-        <footer className="mt-10 flex justify-center">
+        <footer className="mt-10 flex flex-col items-center gap-3">
+          <nav className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 text-xs">
+            <a
+              href="/termos-de-uso"
+              className="text-stone-400 hover:text-teal-700 transition-colors"
+            >
+              Termos de Uso
+            </a>
+            <a
+              href="/politica-de-privacidade"
+              className="text-stone-400 hover:text-teal-700 transition-colors"
+            >
+              Política de Privacidade
+            </a>
+            <a
+              href="/politica-de-cookies"
+              className="text-stone-400 hover:text-teal-700 transition-colors"
+            >
+              Política de Cookies
+            </a>
+          </nav>
           <a
             href="https://github.com/rbarros"
             target="_blank"
@@ -1745,6 +1742,9 @@ export default function CalculadoraFatura() {
           educação sobre a composição da conta de luz.
         </p>
       </div>
+
+      <CookieBanner />
+      <DevicePairingModal open={showPairing} onClose={() => setShowPairing(false)} />
     </div>
   );
 }

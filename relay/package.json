@@ -1,0 +1,15 @@
+{
+  "name": "calculadora-energia-gun-relay",
+  "private": true,
+  "version": "1.0.0",
+  "main": "server.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "gun": "^0.2020.1241"
+  }
+}
