@@ -1,6 +1,5 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import basicSsl from '@vitejs/plugin-basic-ssl';
 
 // GunDB (via gun/sea) tenta puxar o polyfill Node "text-encoding" durante
 // o pre-bundling do Vite, o que não é necessário em navegadores modernos
@@ -20,10 +19,7 @@ const moduleExclude = (match) => {
 };
 
 export default defineConfig({
-  preview: {
-   https: false
-  },
-  plugins: [moduleExclude("text-encoding"), react(), basicSsl()],
+  plugins: [moduleExclude("text-encoding"), react()],
   optimizeDeps: {
     include: ["gun", "gun/gun", "gun/sea", "gun/sea.js"],
   },
