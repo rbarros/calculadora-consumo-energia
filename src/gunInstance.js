@@ -3,8 +3,9 @@ import "gun/sea";
 import { getStoredPair, storePair } from "./gunKeys.js";
 
 const RELAYS = [
-  // Substitua pela URL do seu relay no Render depois do deploy, ex:
-  // "https://calculadora-energia-gun-relay.onrender.com/gun"
+  // Relay próprio (self-hosted no Render) — ver relay/ e README.md
+  "https://calculadora-energia-gun-relay.onrender.com/gun",
+  // Relays públicos da comunidade GunDB, mantidos como fallback
   "https://gun-manhattan.herokuapp.com/gun",
   "https://peer.wallie.io/gun",
 ];
