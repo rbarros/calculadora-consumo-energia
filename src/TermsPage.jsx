@@ -105,12 +105,11 @@ export default function TermsPage() {
               criptografia de ponta a ponta (E2EE): ele é cifrado no seu
               próprio navegador antes de ser armazenado, usando uma chave
               criptográfica gerada automaticamente e exclusiva sua. Os dados
-              cifrados podem trafegar por servidores de retransmissão
-              (relays) públicos da rede GunDB para permitir a sincronização
-              entre os seus próprios dispositivos — mas sempre de forma
-              cifrada: sem a sua chave, ninguém (incluindo os operadores
-              desses relays e o autor desta calculadora) consegue ler o
-              conteúdo.
+              cifrados podem trafegar pelo nosso relay de sincronização
+              (veja a seção 4) para permitir a sincronização entre os seus
+              próprios dispositivos — mas sempre de forma cifrada: sem a sua
+              chave, ninguém (incluindo os operadores desse relay e o autor
+              desta calculadora) consegue ler o conteúdo.
             </p>
             <p>
               A sincronização entre dispositivos só ocorre quando você mesmo
@@ -138,21 +137,24 @@ export default function TermsPage() {
 
           <Secao
             numero="4"
-            titulo="Infraestrutura de sincronização (relays de terceiros)"
+            titulo="Infraestrutura de sincronização"
             icon={Radio}
           >
             <p>
-              A sincronização usa a rede pública GunDB, incluindo os relays{" "}
+              A sincronização usa um relay próprio, que mantemos hospedado
+              na Render (
               <span className="font-mono text-xs">
-                gun-manhattan.herokuapp.com
-              </span>{" "}
-              e{" "}
-              <span className="font-mono text-xs">peer.wallie.io</span>,
-              mantidos pela comunidade de código aberto do GunDB — não por
-              nós. Não garantimos disponibilidade, desempenho ou
-              continuidade desses serviços de terceiros, e não somos
+                energia-relay.extensao.dev
+              </span>
+              ) — um servidor que só repassa os blobs cifrados entre os seus
+              dispositivos, sem conseguir ler o conteúdo.
+            </p>
+            <p>
+              Como toda infraestrutura de hospedagem, não garantimos
+              disponibilidade contínua, desempenho ou continuidade desse
+              serviço (que depende, por sua vez, da Render), e não somos
               responsáveis por indisponibilidade, lentidão ou eventual
-              descontinuação deles.
+              descontinuação dele.
             </p>
           </Secao>
 

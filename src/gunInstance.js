@@ -2,13 +2,11 @@ import Gun from "gun";
 import "gun/sea";
 import { getStoredPair, storePair } from "./gunKeys.js";
 
-const RELAYS = [
-  // Relay próprio (self-hosted no Render) — ver relay/ e README.md
-  "https://calculadora-energia-gun-relay.onrender.com/gun",
-  // Relays públicos da comunidade GunDB, mantidos como fallback
-  "https://gun-manhattan.herokuapp.com/gun",
-  "https://peer.wallie.io/gun",
-];
+// Relay próprio (self-hosted no Render, domínio customizado) — ver
+// relay/ e README.md. Os relays públicos da comunidade GunDB
+// (gun-manhattan.herokuapp.com, peer.wallie.io) foram removidos daqui
+// por estarem fora do ar.
+const RELAYS = ["https://energia-relay.extensao.dev/gun"];
 
 // Não desabilitar a opção `localStorage` do Gun aqui: ela controla o
 // cache interno do próprio grafo Gun (radisk/IndexedDB + localStorage),

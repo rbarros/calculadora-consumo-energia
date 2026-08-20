@@ -79,10 +79,11 @@ Code (botão "Sincronizar dispositivo"), e os dados cifrados trafegam por
 um **relay** — um servidor simples que só repassa/retransmite os blobs
 cifrados, sem conseguir ler o conteúdo.
 
-Por padrão o app aponta para relays públicos da comunidade GunDB, que
-não têm SLA e podem ficar fora do ar (`gun-manhattan.herokuapp.com`,
-`peer.wallie.io`, configurados em `src/gunInstance.js`). Para uma
-sincronização mais confiável, hospede seu próprio relay:
+O app está configurado para usar um relay próprio, hospedado no Render
+com domínio customizado (`energia-relay.extensao.dev`) — ver
+`src/gunInstance.js`. Não usamos mais os relays públicos da comunidade
+GunDB (`gun-manhattan.herokuapp.com`, `peer.wallie.io`): eles estavam
+fora do ar, então foram removidos da lista.
 
 ### Deploy do relay no Render (grátis)
 
@@ -99,19 +100,16 @@ O código do relay está em `relay/` (servidor Node mínimo usando o pacote
    - Alternativa manual (sem Blueprint): **New > Web Service**, selecione
      o repositório, defina *Root Directory* como `relay`, *Build Command*
      `npm install`, *Start Command* `npm start`, plano **Free**.
-4. Quando o deploy terminar, copie a URL pública do serviço (algo como
-   `https://calculadora-energia-gun-relay.onrender.com`) e monte a URL
-   do relay adicionando `/gun` no final.
-5. Edite `src/gunInstance.js` e adicione essa URL no array `RELAYS`
-   (pode manter os relays públicos como fallback):
+4. (Opcional) Configure um domínio customizado para o serviço nas
+   configurações do Web Service no painel do Render.
+5. Copie a URL pública do serviço (o domínio customizado, se configurado,
+   ou a URL padrão `https://<nome-do-serviço>.onrender.com`) e monte a
+   URL do relay adicionando `/gun` no final.
+6. Edite `src/gunInstance.js` e atualize o array `RELAYS` com essa URL:
    ```js
-   const RELAYS = [
-     "https://calculadora-energia-gun-relay.onrender.com/gun",
-     "https://gun-manhattan.herokuapp.com/gun",
-     "https://peer.wallie.io/gun",
-   ];
+   const RELAYS = ["https://energia-relay.extensao.dev/gun"];
    ```
-6. Rode `npm run build` e publique normalmente.
+7. Rode `npm run build` e publique normalmente.
 
 **Importante — plano gratuito do Render:** o serviço "dorme" após 15 min
 sem tráfego e leva de 30 a 60s para acordar na primeira conexão seguinte
@@ -120,7 +118,10 @@ real constante). O armazenamento em disco do plano free também é
 efêmero (`relay/radata`, ignorado no git): o relay é só um ponto de
 encontro/retransmissão, a fonte de verdade continua sendo os próprios
 dispositivos do usuário, então perder o cache do relay num redeploy não
-apaga nada permanentemente — só atrasa a próxima sincronização.
+apaga nada permanentemente — só atrasa a próxima sincronização. Como não
+há mais fallback público, se o relay ficar fora do ar a sincronização
+entre dispositivos fica indisponível até ele voltar (o app continua
+funcionando normalmente no dispositivo local, sem sincronizar).
 
 ## Observações
 

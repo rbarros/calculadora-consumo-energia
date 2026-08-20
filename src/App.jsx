@@ -712,7 +712,7 @@ export default function CalculadoraFatura() {
   const historicoOrdenado = [...historico].sort((a, b) => a.mes.localeCompare(b.mes));
   const chartData = historicoOrdenado.map((h) => ({
     mes: mesLabel(h.mes).slice(0, 3),
-    total: Number(h.totalPagar.toFixed(2)),
+    total: Number((Number(h.totalPagar) || 0).toFixed(2)),
   }));
 
   return (

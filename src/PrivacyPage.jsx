@@ -103,16 +103,15 @@ export default function PrivacyPage() {
                   Metadados de sincronização:
                 </span>{" "}
                 ao sincronizar entre seus dispositivos, blobs cifrados e sua
-                chave pública trafegam por servidores de retransmissão
-                (relays) públicos de terceiros (
+                chave pública trafegam pelo nosso relay próprio, hospedado na
+                Render (
                 <span className="font-mono text-xs">
-                  gun-manhattan.herokuapp.com
+                  energia-relay.extensao.dev
                 </span>
-                ,{" "}
-                <span className="font-mono text-xs">peer.wallie.io</span>).
-                Esses operadores podem ver que existe tráfego cifrado
-                associado a uma chave pública (e metadados técnicos como
-                IP/horário), mas não conseguem ler o conteúdo.
+                ). A Render, como provedora de hospedagem, pode ver que
+                existe tráfego cifrado associado a uma chave pública (e
+                metadados técnicos como IP/horário), mas não consegue ler o
+                conteúdo.
               </li>
               <li>
                 <span className="font-medium text-stone-700">
@@ -161,14 +160,13 @@ export default function PrivacyPage() {
               O conteúdo do seu histórico nunca é compartilhado de forma
               legível — nem conosco, nem com terceiros. Para viabilizar a
               sincronização entre os seus próprios dispositivos, os dados
-              cifrados (ilegíveis sem a sua chave) podem trafegar por
-              servidores de retransmissão públicos da rede GunDB, mantidos
-              pela comunidade open-source do projeto, não por nós. Não
-              vendemos, alugamos nem compartilhamos dados com terceiros para
-              fins de publicidade. Os únicos outros dados que trafegam para
-              fora são as métricas técnicas agregadas processadas pela
-              Vercel Inc., provedora de hospedagem do site, exclusivamente
-              para fins de infraestrutura e análise de uso.
+              cifrados (ilegíveis sem a sua chave) trafegam pelo nosso relay
+              próprio, hospedado na Render. Não vendemos, alugamos nem
+              compartilhamos dados com terceiros para fins de publicidade.
+              Os únicos outros dados que trafegam para fora são as métricas
+              técnicas agregadas processadas pela Vercel Inc., provedora de
+              hospedagem do site, exclusivamente para fins de infraestrutura
+              e análise de uso.
             </p>
           </Secao>
 
@@ -181,16 +179,13 @@ export default function PrivacyPage() {
               de privacidade e conformidade da Vercel.
             </p>
             <p>
-              Os relays de sincronização GunDB (
+              O relay de sincronização (
               <span className="font-mono text-xs">
-                gun-manhattan.herokuapp.com
+                energia-relay.extensao.dev
               </span>
-              ,{" "}
-              <span className="font-mono text-xs">peer.wallie.io</span>) são
-              uma segunda categoria de infraestrutura de terceiros, mantida
-              pela comunidade open-source do GunDB, e também podem estar
-              hospedados fora do Brasil. Apenas dados cifrados trafegam por
-              eles.
+              ) é hospedado na Render, que também pode processar os blobs
+              cifrados em servidores fora do Brasil, seguindo as próprias
+              políticas de privacidade e conformidade da Render.
             </p>
           </Secao>
 
@@ -204,13 +199,12 @@ export default function PrivacyPage() {
               Vercel.
             </p>
             <p>
-              Por ser uma rede P2P descentralizada, cópias cifradas do seu
-              histórico podem permanecer temporariamente em cache nos relays
-              de sincronização mesmo após uma exclusão local, já que não há
-              uma autoridade central capaz de garantir remoção imediata em
-              todos os nós. Ainda assim, esse conteúdo permanece
-              permanentemente ilegível sem a sua chave, já que sempre foi
-              armazenado de forma cifrada.
+              Por ser uma rede P2P, cópias cifradas do seu histórico podem
+              permanecer temporariamente em cache no relay de sincronização
+              mesmo após uma exclusão local, já que a remoção precisa
+              propagar entre os seus dispositivos. Ainda assim, esse
+              conteúdo permanece permanentemente ilegível sem a sua chave,
+              já que sempre foi armazenado de forma cifrada.
             </p>
           </Secao>
 
@@ -228,11 +222,11 @@ export default function PrivacyPage() {
               Você já exerce a maior parte desses direitos diretamente na
               calculadora (excluindo meses do histórico ou usando "Limpar
               tudo"). A exclusão propaga um marcador de remoção para os seus
-              dispositivos sincronizados, mas por ser uma rede P2P
-              descentralizada não é possível garantir remoção
-              imediata/completa de eventuais cópias em cache nos relays — o
-              conteúdo, porém, já era ilegível para terceiros desde sempre,
-              pois sempre esteve cifrado. Para qualquer outra solicitação,
+              dispositivos sincronizados, mas não é possível garantir
+              remoção imediata/completa de eventuais cópias em cache no
+              relay — o conteúdo, porém, já era ilegível para terceiros
+              desde sempre, pois sempre esteve cifrado. Para qualquer outra
+              solicitação,
               inclusive relacionada às métricas agregadas, entre em contato
               pelo{" "}
               <a
@@ -253,7 +247,7 @@ export default function PrivacyPage() {
               exige cadastro, o principal cuidado de segurança é técnico:
               todo o tráfego do site é feito via HTTPS, e a sincronização
               entre dispositivos usa criptografia de ponta a ponta (E2EE via
-              SEA/GunDB) — os dados cifrados que trafegam pelos relays são
+              SEA/GunDB) — os dados cifrados que trafegam pelo relay são
               ilegíveis sem a chave privada, mantida apenas no navegador do
               usuário. A ferramenta não é direcionada a crianças, mas também
               não coleta intencionalmente dados pessoais de nenhum

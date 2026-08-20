@@ -34,13 +34,25 @@ function ensureSubscribed() {
         .on((dado, chave) => {
           if (dado === null || dado === undefined) {
             records.delete(chave);
-          } else {
-            // Gun injeta um campo de metadados "_" em cada nó — removemos
-            // antes de tratar como registro de app, e reatribuímos "mes"
-            // (a chave do nó não vem automaticamente como campo).
-            const { _, ...resto } = dado;
-            records.set(chave, { ...resto, mes: chave });
+            notify();
+            return;
           }
+          // Gun injeta um campo de metadados "_" em cada nó — removemos
+          // antes de tratar como registro de app, e reatribuímos "mes"
+          // (a chave do nó não vem automaticamente como campo).
+          const { _, ...resto } = dado;
+          const registro = { ...resto, mes: chave };
+          // Uma escrita nova pode propagar em mais de um evento antes do
+          // objeto completo chegar — ignoramos updates sem os campos
+          // essenciais em vez de deixar um registro incompleto entrar no
+          // estado (evitava crash no cálculo do gráfico/histórico).
+          if (
+            typeof registro.totalPagar !== "number" ||
+            Number.isNaN(registro.totalPagar)
+          ) {
+            return;
+          }
+          records.set(chave, registro);
           notify();
         });
     });

@@ -1,7 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Scanner } from "@yudiel/react-qr-scanner";
-import { QrCode, ScanLine, X, ClipboardPaste, AlertTriangle } from "lucide-react";
+import {
+  QrCode,
+  ScanLine,
+  X,
+  ClipboardPaste,
+  AlertTriangle,
+  CheckCircle2,
+} from "lucide-react";
 import { getStoredPair, storePair } from "./gunKeys.js";
 
 function validarPar(pair) {
@@ -15,6 +22,12 @@ export default function DevicePairingModal({ open, onClose }) {
   const [textoColado, setTextoColado] = useState("");
   const [erro, setErro] = useState("");
   const [chavesAtuais, setChavesAtuais] = useState(null);
+  const [sincronizando, setSincronizando] = useState(false);
+  // useRef (não useState) para travar chamadas duplicadas de forma
+  // síncrona: o scanner de câmera dispara onScan a cada frame detectado,
+  // e sem essa trava múltiplas chamadas simultâneas a reload() deixavam
+  // a navegação numa transição quebrada (tela em branco).
+  const aplicandoRef = useRef(false);
 
   useEffect(() => {
     if (open) {
@@ -22,12 +35,16 @@ export default function DevicePairingModal({ open, onClose }) {
       setAba("mostrar");
       setErro("");
       setTextoColado("");
+      setSincronizando(false);
+      aplicandoRef.current = false;
     }
   }, [open]);
 
   if (!open) return null;
 
   const aplicarNovoPar = (texto) => {
+    if (aplicandoRef.current) return;
+
     let pair;
     try {
       pair = JSON.parse(texto);
@@ -39,8 +56,15 @@ export default function DevicePairingModal({ open, onClose }) {
       setErro("Código lido, mas não é um par de chaves válido.");
       return;
     }
+
+    aplicandoRef.current = true;
+    setErro("");
+    // Desmonta o <Scanner /> (abaixo) antes de recarregar, para liberar a
+    // câmera de forma limpa — recarregar com o stream de vídeo ainda
+    // ativo é o que causava a tela em branco.
+    setSincronizando(true);
     storePair(pair);
-    window.location.reload();
+    setTimeout(() => window.location.reload(), 300);
   };
 
   return (
@@ -105,7 +129,16 @@ export default function DevicePairingModal({ open, onClose }) {
             </div>
           )}
 
-          {aba === "ler" && (
+          {aba === "ler" && sincronizando && (
+            <div className="flex flex-col items-center gap-2 py-8">
+              <CheckCircle2 size={28} className="text-teal-700" />
+              <p className="text-sm text-stone-600 text-center">
+                Chaves aplicadas — sincronizando e recarregando a página...
+              </p>
+            </div>
+          )}
+
+          {aba === "ler" && !sincronizando && (
             <div className="space-y-3">
               <p className="text-xs text-stone-500 leading-relaxed">
                 Aponte a câmera para o QR Code exibido no outro dispositivo,

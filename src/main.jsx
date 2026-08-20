@@ -6,6 +6,7 @@ import App from "./App.jsx";
 import CookiesPage from "./CookiesPage.jsx";
 import TermsPage from "./TermsPage.jsx";
 import PrivacyPage from "./PrivacyPage.jsx";
+import ErrorBoundary from "./ErrorBoundary.jsx";
 import "./index.css";
 
 const PAGINAS = {
@@ -18,7 +19,9 @@ const Pagina = PAGINAS[window.location.pathname] || App;
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <Pagina />
+    <ErrorBoundary>
+      <Pagina />
+    </ErrorBoundary>
     <Analytics />
     <SpeedInsights />
   </React.StrictMode>
