@@ -196,29 +196,29 @@ function Row({ label, qty, unit, value, tone = "default", info }) {
 }
 
 const STATUS_STYLES = {
-  confirmado: {
+  alto: {
     icon: CheckCircle2,
     color: "text-teal-700",
     bg: "bg-teal-50",
-    label: "Fator confirmado",
+    label: "Impacto Alto / Confirmado",
   },
-  separado: {
+  operacional: {
     icon: Wrench,
     color: "text-sky-700",
     bg: "bg-sky-50",
-    label: "Problema à parte",
+    label: "Problema Operacional",
   },
-  parcial: {
+  baixo: {
     icon: AlertTriangle,
     color: "text-amber-700",
     bg: "bg-amber-50",
-    label: "Contribui pouco",
+    label: "Impacto Baixo",
   },
-  duvidoso: {
+  parcial: {
     icon: HelpCircle,
     color: "text-stone-500",
     bg: "bg-stone-100",
-    label: "Não confirmado",
+    label: "Impacto Parcial",
   },
 };
 
@@ -271,46 +271,133 @@ const FATORES = [
   {
     id: "reajuste",
     titulo: "Reajuste de 14,98%",
-    status: "confirmado",
+    status: "alto",
     texto:
-      'A ANEEL aprovou reajuste médio de 14,97% para consumidores residenciais da RGE (a distribuidora divulgou como "14,98%"), em vigor desde 19/06/2026. A própria empresa reconhece que esse percentual sozinho não explica aumentos de 200% a 300% relatados por clientes.',
+      'A ANEEL aprovou em 16/06/2026 o reajuste tarifário anual da RGE (REH 3.590/2026), em vigor desde 19/06/2026. O efeito médio geral é de 16,06%; para residenciais (B1) a agência homologou 14,97% e a distribuidora divulga 14,98%. Esse índice já inclui CVA (6,87 p.p.), recomposição pós-enchentes (3,63 p.p.), CDE Uso (2,82 p.p.) e transmissão (1,97 p.p.) — não é um acréscimo extra. Sozinho não explica aumentos de 200% a 300% relatados por clientes.',
+    fontes: [
+      {
+        data: "16/06/2026",
+        nome: "CNN Brasil",
+        url: "https://www.cnnbrasil.com.br/infra/conta-de-luz-subira-mais-de-16-para-32-milhoes-de-imoveis-no-rs/",
+      },
+      {
+        data: "16/06/2026",
+        nome: "CPFL RGE (Conselho de Consumidores)",
+        url: "https://consumidoresdargesul.com.br/index.php/aneel-homologa-reajuste-das-tarifas-para-clientes-da-cpfl-rge/",
+      },
+    ],
   },
   {
     id: "enchentes",
     titulo: "Recomposição pós-enchentes",
-    status: "confirmado",
+    status: "alto",
     texto:
-      "Em 2025, a ANEEL diferiu parte do reajuste da RGE por causa das enchentes de maio/2024 no RS, para não pesar sobre a população naquele momento. Agora esse valor está sendo recomposto em parcelas (30% neste ciclo, com mais devolução prevista para 2027), empurrando a tarifa para cima.",
+      "Nas enchentes de 2024 no RS, a ANEEL diferiu o reajuste da RGE e reconheceu um ativo regulatório de R$ 1,233 bilhão, para não pesar sobre a população na calamidade. A recuperação veio depois: cerca de R$ 370–384 milhões em 2025 e R$ 424,2 milhões neste ciclo de 2026 (3,63 p.p. do efeito tarifário, cerca de um quarto do valor diferido). Resta saldo estimado de R$ 789,9 milhões para 2027, atualizado pela Selic.",
+    fontes: [
+      {
+        data: "16/06/2026",
+        nome: "CNN Brasil",
+        url: "https://www.cnnbrasil.com.br/infra/conta-de-luz-subira-mais-de-16-para-32-milhoes-de-imoveis-no-rs/",
+      },
+      {
+        data: "16/06/2026",
+        nome: "MegaWhat",
+        url: "https://megawhat.uol.com.br/distribuicao/rge-tera-reajuste-de-16-com-nova-parcela-da-recomposicao-pos-enchentes/",
+      },
+    ],
   },
   {
     id: "sistema",
     titulo: "Troca do sistema de faturamento da RGE",
-    status: "separado",
+    status: "operacional",
     texto:
-      "Em julho/2026 a RGE migrou de plataforma de atendimento e faturamento, deslocando datas de leitura de 740 mil clientes (23% da base). Isso não explica valores mais altos — é um problema à parte: a fatura de agosto não foi emitida para esse grupo e está sendo parcelada em 6x entre out/2026 e mar/2027.",
+      "Em julho/2026 a RGE migrou de plataforma de atendimento e faturamento, deslocando datas de leitura de 740 mil clientes (23% da base). Isso não explica valores mais altos — é um problema operacional de calendário: a fatura de agosto não foi emitida para esse grupo e está sendo parcelada em 6x sem juros entre out/2026 e mar/2027.",
+    fontes: [
+      {
+        data: "17/08/2026",
+        nome: "G1",
+        url: "https://g1.globo.com/rs/rio-grande-do-sul/noticia/2026/08/17/rge-altera-sistema-e-fatura-sera-parcelada-em-seis-vezes-para-mais-de-700-mil-clientes-entenda-como-fica-a-conta-de-luz.ghtml",
+      },
+      {
+        data: "18/08/2026",
+        nome: "GZH",
+        url: "https://gauchazh.clicrbs.com.br/geral/noticia/2026/08/contas-de-luz-de-agosto-serao-cobradas-so-a-partir-de-outubro-para-740-mil-clientes-da-rge-entenda-cmsrz27a401k1014rkk5l1wo5.html",
+      },
+    ],
   },
   {
     id: "inverno",
     titulo: "Consumo relacionado ao inverno",
-    status: "parcial",
+    status: "baixo",
     texto:
-      'O chuveiro elétrico no modo "inverno" pode consumir até 30% a mais. A RGE cita esse fator, mas vários consumidores comprovaram consumo em kWh praticamente estável enquanto o valor da fatura triplicava — insuficiente para explicar os casos mais extremos.',
+      'O chuveiro elétrico no modo "inverno" pode consumir até 30% a mais, e a RGE atribui a alta a aquecedores e mudança de hábito. Relatos em Passo Fundo e Canoas, porém, mostram kWh estável ou aumento pequeno (cerca de 25%) enquanto a fatura quase triplicava — insuficiente para explicar os casos mais extremos.',
+    fontes: [
+      {
+        data: "07/08/2026",
+        nome: "G1",
+        url: "https://g1.globo.com/rs/rio-grande-do-sul/noticia/2026/08/07/consumidores-relatam-aumento-de-quase-300percent-na-energia-eletrica-e-contas-de-ate-r-2-mil-no-rs-um-absurdo.ghtml",
+      },
+      {
+        data: "20/08/2026",
+        nome: "GZH",
+        url: "https://gauchazh.clicrbs.com.br/geral/noticia/2026/08/aneel-e-procons-do-rs-registram-aumento-de-queixas-contra-rge-cmsz93r9i00tq015hh8pdmjrh.html",
+      },
+    ],
   },
   {
     id: "bandeira",
     titulo: "Bandeira tarifária",
-    status: "parcial",
+    status: "baixo",
     texto:
-      "A bandeira está amarela desde maio/2026 (mantida em junho, julho e agosto), somando R$ 1,885 a cada 100 kWh consumidos. É um custo real, mas pequeno perto dos aumentos relatados.",
+      "A bandeira está amarela desde maio/2026 (mantida em junho, julho e agosto), somando R$ 1,885 a cada 100 kWh consumidos — cerca de R$ 3,77 extras em 200 kWh. É um custo real, mas pequeno perto dos aumentos relatados.",
+    fontes: [
+      {
+        data: "31/07/2026",
+        nome: "ANEEL",
+        url: "https://www.gov.br/aneel/pt-br/assuntos/noticias/2026-defeso-eleitoral/bandeira-tarifaria-continua-amarela-em-agosto",
+      },
+    ],
   },
   {
     id: "programassociais",
     titulo: "Programas Sociais",
-    status: "duvidoso",
+    status: "parcial",
     texto:
-      "Dois programas reais integram a CDE (Conta de Desenvolvimento Energético) e são pagos por todos os consumidores via rateio: (1) Tarifa Social / Desconto Social (Lei 15.235/2025) — isenta famílias de baixa renda cadastradas no CadÚnico da cobrança da CDE em até 120 kWh/mês, podendo zerar a fatura até 80 kWh; (2) Luz para Todos — programa federal mais antigo, voltado à universalização do acesso à energia elétrica em áreas rurais. Os dois têm efeito real no orçamento da CDE, mas o impacto é indireto e pequeno no reajuste geral — sem relação direta e específica com o caso da RGE.",
+      "A CDE Uso teve impacto confirmado de 2,82 p.p. no reajuste da RGE em 2026. Dela fazem parte a Tarifa Social / Desconto Social (Lei 15.235/2025) — isenção da CDE até 120 kWh/mês para famílias no CadÚnico e desconto de 100% até 80 kWh — e o Luz para Todos, de universalização rural. O efeito no reajuste geral é indireto e pequeno, sem relação específica com saltos de 200–300%.",
+    fontes: [
+      {
+        data: "16/06/2026",
+        nome: "CNN Brasil",
+        url: "https://www.cnnbrasil.com.br/infra/conta-de-luz-subira-mais-de-16-para-32-milhoes-de-imoveis-no-rs/",
+      },
+      {
+        data: "08/10/2025",
+        nome: "Lei 15.235/2025",
+        url: "https://www.planalto.gov.br/ccivil_03/_ato2023-2026/2025/lei/l15235.htm",
+      },
+    ],
   },
 ];
+
+function FatorFontes({ fontes }) {
+  if (!fontes?.length) return null;
+  return (
+    <ul className="mt-2 space-y-0.5">
+      {fontes.map((fonte) => (
+        <li key={fonte.url} className="text-xs text-stone-400">
+          <a
+            href={fonte.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-teal-700 underline underline-offset-2"
+          >
+            {fonte.data} — {fonte.nome}
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 function FatorItem({ fator, isOpen, onToggle }) {
   const s = STATUS_STYLES[fator.status];
@@ -330,7 +417,7 @@ function FatorItem({ fator, isOpen, onToggle }) {
           </span>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <span className={`hidden sm:inline text-[10px] uppercase tracking-wide font-semibold ${s.color}`}>
+          <span className={`hidden sm:inline text-[10px] uppercase tracking-wide font-semibold whitespace-nowrap ${s.color}`}>
             {s.label}
           </span>
           <ChevronDown
@@ -345,6 +432,7 @@ function FatorItem({ fator, isOpen, onToggle }) {
             {s.label}
           </span>
           <p className="text-sm text-stone-600 leading-relaxed">{fator.texto}</p>
+          <FatorFontes fontes={fator.fontes} />
         </div>
       )}
     </div>
@@ -1519,13 +1607,14 @@ export default function CalculadoraFatura() {
               ))}
               <p className="text-xs text-stone-400 pt-2">
                 Resumo: o reajuste de ~15% e a recomposição pós-enchentes
-                explicam o aumento estrutural nas tarifas. Inverno e bandeira
-                amarela somam um pouco mais, mas não bastam para justificar
-                aumentos de 200–300%. A troca de sistema é um problema
-                separado, ligado ao calendário de cobrança, não ao valor. Já
-                os Programas Sociais (Tarifa Social e Luz para Todos) têm
-                efeito real no orçamento da CDE, mas indireto e pequeno no
-                reajuste geral.
+                têm impacto alto e confirmado no aumento estrutural das
+                tarifas (CVA e transmissão já entram nesse índice). Inverno e
+                bandeira amarela têm impacto baixo e não bastam para
+                justificar aumentos de 200–300%. A troca de sistema é um
+                problema operacional, ligado ao calendário de cobrança, não
+                ao valor. Programas sociais (Tarifa Social e Luz para Todos)
+                têm impacto parcial via CDE. Procons e a Agergs apuram o
+                hiato entre o reajuste autorizado e os valores relatados.
               </p>
             </div>
           )}
@@ -1733,6 +1822,21 @@ export default function CalculadoraFatura() {
                 </span>
               </div>
               <p className="text-xs text-stone-600 leading-relaxed">{f.texto}</p>
+              {f.fontes?.length > 0 && (
+                <ul className="mt-1 space-y-0.5">
+                  {f.fontes.map((fonte) => (
+                    <li key={fonte.url} className="text-[10px] text-stone-400">
+                      <a
+                        href={fonte.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {fonte.data} — {fonte.nome}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           ))}
         </div>
