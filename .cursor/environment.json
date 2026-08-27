@@ -1,0 +1,15 @@
+{
+  "name": "calculadora-consumo-energia",
+  "install": "npm install && npm install --prefix relay",
+  "terminals": [
+    {
+      "name": "vite-dev",
+      "command": "npm run dev -- --host"
+    },
+    {
+      "name": "gun-relay",
+      "command": "npm start --prefix relay"
+    }
+  ],
+  "ports": [5173, 8765]
+}
